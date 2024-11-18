@@ -3,6 +3,9 @@ from .models import Producto, Categoria
 from rest_framework import generics
 from .models import Categoria, Producto
 from .serializers import CategoriaSerializer, ProductoSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .serializers import ProductoSerializer
 
 # Vistas para la tabla Categoria
 class CategoriaListCreate(generics.ListCreateAPIView):
@@ -51,3 +54,16 @@ def productos_por_categoria(request, categoria_id):
         'categorias': categorias,  # Incluir categorías en el contexto
     }
     return render(request, 'productos_por_categoria.html', context)
+
+
+class ProductosPorCategoria(APIView):
+    def get(self, request, categoria_id):
+        # Verificar si la categoría existe
+        categoria = get_object_or_404(Categoria, pk=categoria_id)
+        
+        # Filtrar productos por la categoría
+        productos = Producto.objects.filter(categoria=categoria)
+        serializer = ProductoSerializer(productos, many=True)
+        
+        # Devolver los productos como respuesta JSON
+        return Response(serializer.data)
